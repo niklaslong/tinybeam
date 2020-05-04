@@ -2,14 +2,14 @@ use crate::atoms;
 use rustler::{Atom, Env, NifMap, ResourceArc, Term};
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
-use tiny_http::{Server, Response, Request};
+use tiny_http::{Request, Response, Server};
 
 struct ServerRef {
     server: Server,
 }
 
 struct ReqRef {
-  request: Mutex<Option<Request>>,
+    request: Mutex<Option<Request>>,
 }
 
 pub fn load(env: Env, _: Term) -> bool {
@@ -34,17 +34,19 @@ fn start_request_listener(server_ref: ResourceArc<ServerRef>) -> ResourceArc<Req
     let server = &server_ref.server;
     let request = server.recv().unwrap();
 
-    let req_ref = ResourceArc::new(ReqRef{request: Mutex::new(Some(request))});
+    let req_ref = ResourceArc::new(ReqRef {
+        request: Mutex::new(Some(request)),
+    });
     req_ref
 }
 
 #[rustler::nif]
 fn handle_request(request_ref: ResourceArc<ReqRef>, response: String) -> Atom {
-  let mut request_ref = request_ref.request.lock().unwrap();
-  let response = Response::from_string(response);
-    
-    if let Some(request) = request_ref.take()  {
-      let _res = request.respond(response); 
+    let mut request_ref = request_ref.request.lock().unwrap();
+    let response = Response::from_string(response);
+
+    if let Some(request) = request_ref.take() {
+        let _res = request.respond(response);
     }
 
     atoms::ok()

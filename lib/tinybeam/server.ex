@@ -19,8 +19,8 @@ defmodule Tinybeam.Server do
   def handle_req(server_ref) do
     server_ref
     |> Tinybeam.Native.start_request_listener()
-    |> Tinybeam.Native.handle_request("hi mum I think this works")
-    
+    |> Tinybeam.Native.handle_request("I think it works")
+
     Tinybeam.Server.start_listener(server_ref)
   end
 end
