@@ -1,5 +1,5 @@
 rustler::atoms! {
-  ok, 
+  ok,
   error,
   hi,
 }

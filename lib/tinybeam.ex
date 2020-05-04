@@ -1,18 +1,5 @@
 defmodule Tinybeam do
-  @moduledoc """
-  Documentation for `Tinybeam`.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Tinybeam.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def start(), do: Tinybeam.Native.start()
+  def request_listener(state), do: Tinybeam.Native.request_listener(state)
+  def handle_request(server_ref, request_ref), do: Tinybeam.Native.handle_request(server_ref, request_ref)
 end

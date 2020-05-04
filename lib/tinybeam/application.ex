@@ -5,14 +5,13 @@ defmodule Tinybeam.Application do
 
   use Application
 
+  require Tinybeam
+
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Tinybeam.Worker.start_link(arg)
-      # {Tinybeam.Worker, arg}
+      Tinybeam.Server
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Tinybeam.Supervisor]
     Supervisor.start_link(children, opts)
   end
