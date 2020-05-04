@@ -29,7 +29,7 @@ fn start() -> ResourceArc<ServerRef> {
     server_ref
 }
 
-#[rustler::nif()]
+#[rustler::nif(schedule = "DirtyCpu")]
 fn start_request_listener(server_ref: ResourceArc<ServerRef>) -> ResourceArc<ReqRef> {
     let server = &server_ref.server;
     let request = server.recv().unwrap();

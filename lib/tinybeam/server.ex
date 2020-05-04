@@ -6,16 +6,21 @@ defmodule Tinybeam.Server do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  # def init(opts) do
-  #   ref = Tinybeam.Native.start()
-  #   {:ok, %{server_ref: ref}}
-  # end
+  def init(opts) do
+    server_ref = Tinybeam.Native.start()
+    Tinybeam.Server.start_listener(server_ref)
+    {:ok, "started"}
+  end
 
-  # def handle_info(_, state) do
-  #   Task.start(fn -> Tiny.Server.handle_request(request) end)
-  # end
+  def start_listener(server_ref) do
+    Task.start(fn -> Tinybeam.Server.handle_req(server_ref) end)
+  end
 
-  # def handle_req(state) do
-  #   IEx.pry
-  # end
+  def handle_req(server_ref) do
+    server_ref
+    |> Tinybeam.Native.start_request_listener()
+    |> Tinybeam.Native.handle_request("hi mum I think this works")
+    
+    Tinybeam.Server.start_listener(server_ref)
+  end
 end
