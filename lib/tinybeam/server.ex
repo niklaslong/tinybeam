@@ -7,28 +7,19 @@ defmodule Tinybeam.Server do
   end
 
   def init(opts) do
-    server_ref = Tinybeam.Native.start(opts)
-    Tinybeam.Server.start_listener(server_ref)
+    :ok = Tinybeam.Native.start(opts)
     {:ok, "started"}
   end
 
   def handle_info({:hi, message}, state) do
-    IEx.pry
-  end
-
-  def start_listener(server_ref) do
     Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
-      Tinybeam.Server.handle_req(server_ref)
-    end)
-  end
-
-  def handle_req(server_ref) do
-    req_ref = Tinybeam.Native.start_request_listener(server_ref)
-
-    Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
-      Tinybeam.Native.handle_request(req_ref, "I think it works")
+      Tinybeam.Server.handle_req(message)
     end)
 
-    Tinybeam.Server.start_listener(server_ref)
+    {:noreply, state}
+  end
+
+  def handle_req(req_ref) do
+    :ok = Tinybeam.Native.handle_request(req_ref, "I think it works")
   end
 end

@@ -1,5 +1,5 @@
 use crate::atoms;
-use rustler::{Atom, Env, NifMap, ResourceArc, Term, OwnedEnv, Encoder};
+use rustler::{Atom, Encoder, Env, NifMap, OwnedEnv, ResourceArc, Term};
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
 use tiny_http::{Request, Response, Server};
@@ -19,25 +19,35 @@ pub fn load(env: Env, _: Term) -> bool {
 }
 
 #[rustler::nif()]
-fn start(env: Env, _term: Term) -> ResourceArc<ServerRef> {
+fn start(env: Env, _term: Term) -> Atom {
     let server = Server::http("127.0.0.1:8000").unwrap();
     let addr = server.server_addr();
     let pid = env.pid();
 
     std::thread::spawn(move || {
-      let data = String::from("this is a test");
-      let mut msg_env = OwnedEnv::new();
-      
+        let mut msg_env = OwnedEnv::new();
 
+        for request in server.incoming_requests() {
+            println!(
+                "received request! method: {:?}, url: {:?}, headers: {:?}",
+                request.method(),
+                request.url(),
+                request.headers()
+            );
 
+            let req_ref = ResourceArc::new(ReqRef {
+                request: Mutex::new(Some(request)),
+            });
 
-      msg_env.send_and_clear(&pid, |env| (atoms::hi(), data).encode(env));
+            msg_env.send_and_clear(&pid, |env| (atoms::hi(), req_ref).encode(env));
+        }
     });
 
     println!("Server started, listening on port {:?}", addr);
 
-    let server_ref = ResourceArc::new(ServerRef { server: server });
-    server_ref
+    // let server_ref = ResourceArc::new(ServerRef { server: server });
+    // server_ref
+    atoms::ok()
 }
 
 #[rustler::nif(schedule = "DirtyCpu")]
