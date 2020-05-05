@@ -1,7 +1,7 @@
 defmodule Tinybeam.Native do
   use Rustler, otp_app: :tinybeam, crate: "tinybeam"
 
-  def start(), do: error()
+  def start(_opts), do: error()
   def start_request_listener(_server_ref), do: error()
   def handle_request(_request_ref, _response), do: error()
 

@@ -9,6 +9,7 @@ defmodule Tinybeam.Application do
 
   def start(_type, _args) do
     children = [
+      {Task.Supervisor, name: Tinybeam.TaskSupervisor},
       Tinybeam.Server
     ]
 

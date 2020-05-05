@@ -1,5 +1,5 @@
 use crate::atoms;
-use rustler::{Atom, Env, NifMap, ResourceArc, Term};
+use rustler::{Atom, Env, NifMap, ResourceArc, Term, OwnedEnv, Encoder};
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
 use tiny_http::{Request, Response, Server};
@@ -19,9 +19,20 @@ pub fn load(env: Env, _: Term) -> bool {
 }
 
 #[rustler::nif()]
-fn start() -> ResourceArc<ServerRef> {
+fn start(env: Env, _term: Term) -> ResourceArc<ServerRef> {
     let server = Server::http("127.0.0.1:8000").unwrap();
     let addr = server.server_addr();
+    let pid = env.pid();
+
+    std::thread::spawn(move || {
+      let data = String::from("this is a test");
+      let mut msg_env = OwnedEnv::new();
+      
+
+
+
+      msg_env.send_and_clear(&pid, |env| (atoms::hi(), data).encode(env));
+    });
 
     println!("Server started, listening on port {:?}", addr);
 
