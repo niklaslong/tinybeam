@@ -1,21 +1,4 @@
 # Tinybeam
 
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `tinybeam` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:tinybeam, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/tinybeam](https://hexdocs.pm/tinybeam).
-
+Experimental Elixir & Rust http server using [tiny_http](https://github.com/tiny-http/tiny-http) and [rustler](https://github.com/rusterlium/rustler).
+This is also heavily inspired by [hyperbeam](https://github.com/rusterlium/hyperbeam). 
