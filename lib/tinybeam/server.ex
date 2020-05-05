@@ -1,6 +1,7 @@
 defmodule Tinybeam.Server do
   use GenServer
   require IEx
+  require Logger
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)

@@ -1,19 +1,14 @@
 use crate::atoms;
-use rustler::{Atom, Encoder, Env, NifMap, OwnedEnv, ResourceArc, Term};
-use std::sync::{Arc, Mutex, RwLock};
+use rustler::{Atom, Encoder, Env, OwnedEnv, ResourceArc, Term};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use tiny_http::{Request, Response, Server};
-
-struct ServerRef {
-    server: Server,
-}
 
 struct ReqRef {
     request: Mutex<Option<Request>>,
 }
 
 pub fn load(env: Env, _: Term) -> bool {
-    rustler::resource!(ServerRef, env);
     rustler::resource!(ReqRef, env);
     true
 }
@@ -22,43 +17,33 @@ pub fn load(env: Env, _: Term) -> bool {
 fn start(env: Env, _term: Term) -> Atom {
     let server = Server::http("127.0.0.1:8000").unwrap();
     let addr = server.server_addr();
-    let pid = env.pid();
+    let pid = Arc::new(env.pid());
 
     std::thread::spawn(move || {
-        let mut msg_env = OwnedEnv::new();
+        let server = Arc::new(server);
+        let mut guards = Vec::with_capacity(4);
 
-        for request in server.incoming_requests() {
-            println!(
-                "received request! method: {:?}, url: {:?}, headers: {:?}",
-                request.method(),
-                request.url(),
-                request.headers()
-            );
+        for _ in 0..10 {
+            let pid = Arc::clone(&pid);
+            let server = server.clone();
 
-            let req_ref = ResourceArc::new(ReqRef {
-                request: Mutex::new(Some(request)),
+            let guard = thread::spawn(move || loop {
+                let mut msg_env = OwnedEnv::new();
+                let request = server.recv().unwrap();
+
+                let req_ref = ResourceArc::new(ReqRef {
+                    request: Mutex::new(Some(request)),
+                });
+
+                msg_env.send_and_clear(&pid, |env| (atoms::hi(), req_ref).encode(env));
             });
 
-            msg_env.send_and_clear(&pid, |env| (atoms::hi(), req_ref).encode(env));
+            guards.push(guard);
         }
     });
 
     println!("Server started, listening on port {:?}", addr);
-
-    // let server_ref = ResourceArc::new(ServerRef { server: server });
-    // server_ref
     atoms::ok()
-}
-
-#[rustler::nif(schedule = "DirtyCpu")]
-fn start_request_listener(server_ref: ResourceArc<ServerRef>) -> ResourceArc<ReqRef> {
-    let server = &server_ref.server;
-    let request = server.recv().unwrap();
-
-    let req_ref = ResourceArc::new(ReqRef {
-        request: Mutex::new(Some(request)),
-    });
-    req_ref
 }
 
 #[rustler::nif]
