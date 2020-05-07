@@ -76,7 +76,7 @@ fn start(env: Env, config: Config) -> Atom {
                     method: method,
                 };
 
-                msg_env.send_and_clear(&pid, |env| (atoms::hi(), req).encode(env));
+                msg_env.send_and_clear(&pid, |env| (atoms::request(), req).encode(env));
             });
 
             guards.push(guard);

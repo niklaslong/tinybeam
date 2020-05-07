@@ -1,7 +1,7 @@
 rustler::atoms! {
   ok,
   error,
-  hi,
+  request,
   get,
   head,
   post,

@@ -16,7 +16,7 @@ defmodule Tinybeam.Server do
     {:ok, "started"}
   end
 
-  def handle_info({:hi, message}, state) do
+  def handle_info({:request, message}, state) do
     Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
       Tinybeam.Server.handle_req(message)
     end)
