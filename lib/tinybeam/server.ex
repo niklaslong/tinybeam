@@ -16,15 +16,15 @@ defmodule Tinybeam.Server do
     {:ok, "started"}
   end
 
-  def handle_info({:request, message}, state) do
+  def handle_info({:request, request}, state) do
     Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
-      Tinybeam.Server.handle_req(message)
+      Tinybeam.Server.handle_req(request)
     end)
 
     {:noreply, state}
   end
 
-  def handle_req(req_ref) do
-    :ok = Tinybeam.Native.handle_request(req_ref, "I think it works")
+  def handle_req(request) do
+    :ok = Tinybeam.Native.handle_request(request, "I think it works")
   end
 end
