@@ -1,4 +1,5 @@
 defmodule Tinybeam.Server.Config do
+  @enforce_keys [:host]
   defstruct [:host]
 
   def new(), do: %__MODULE__{host: host()}
