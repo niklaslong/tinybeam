@@ -1,14 +1,18 @@
 defmodule Tinybeam.Server do
   use GenServer
+  
+  alias Tinybeam.Server.Config
+
   require IEx
   require Logger
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  def start_link(_opts) do
+    config = Config.new()
+    GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
-  def init(opts) do
-    :ok = Tinybeam.Native.start(opts)
+  def init(config) do
+    :ok = Tinybeam.Native.start(config)
     {:ok, "started"}
   end
 
