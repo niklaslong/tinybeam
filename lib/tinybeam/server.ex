@@ -1,6 +1,6 @@
 defmodule Tinybeam.Server do
   use GenServer
-  
+
   alias Tinybeam.Server.Config
 
   require IEx

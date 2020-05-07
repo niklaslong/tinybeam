@@ -1,13 +1,13 @@
 use crate::atoms;
-use rustler::{Atom, Encoder, Env, OwnedEnv, ResourceArc, Term, NifStruct};
+use rustler::{Atom, Encoder, Env, NifStruct, OwnedEnv, ResourceArc, Term};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use tiny_http::{Request, Response, Server, Method};
+use tiny_http::{Method, Request, Response, Server};
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Config"]
 struct Config {
-    host: String
+    host: String,
 }
 
 struct ReqRef(Mutex<Option<Request>>);
@@ -16,14 +16,14 @@ struct ReqRef(Mutex<Option<Request>>);
 #[module = "Tinybeam.Server.Request"]
 struct Req {
     req_ref: ResourceArc<ReqRef>,
-    method: Atom
+    method: Atom,
 }
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Response"]
 struct Resp {
     req_ref: ResourceArc<ReqRef>,
-    body: String
+    body: String,
 }
 
 pub fn load(env: Env, _: Term) -> bool {
@@ -50,7 +50,7 @@ impl AsAtom for Method {
             _ => atoms::non_standard(),
         }
     }
-} 
+}
 
 #[rustler::nif()]
 fn start(env: Env, config: Config) -> Atom {
@@ -73,7 +73,7 @@ fn start(env: Env, config: Config) -> Atom {
 
                 let req = Req {
                     req_ref: ResourceArc::new(ReqRef(Mutex::new(Some(request)))),
-                    method: method
+                    method: method,
                 };
 
                 msg_env.send_and_clear(&pid, |env| (atoms::hi(), req).encode(env));
