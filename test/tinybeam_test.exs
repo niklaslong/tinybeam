@@ -9,7 +9,7 @@ defmodule TinybeamTest do
     response = send_request("GET", "/")
 
     assert response.status == 200
-    assert response.data == "I think it works"
+    assert response.data == "yay"
   end
 
   defp send_request(method, path, headers \\ [], body \\ "") do
