@@ -6,7 +6,7 @@ use tiny_http::{Method, Request, Response, Server};
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Config"]
-struct Config {
+pub struct Config {
     host: String,
 }
 
@@ -14,14 +14,14 @@ struct ReqRef(Mutex<Option<Request>>);
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Request"]
-struct Req {
+pub struct Req {
     req_ref: ResourceArc<ReqRef>,
     method: Atom,
 }
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Response"]
-struct Resp {
+pub struct Resp {
     req_ref: ResourceArc<ReqRef>,
     body: String,
 }
@@ -31,29 +31,8 @@ pub fn load(env: Env, _: Term) -> bool {
     true
 }
 
-trait AsAtom {
-    fn as_atom(&self) -> Atom;
-}
-
-impl AsAtom for Method {
-    fn as_atom(&self) -> Atom {
-        match self {
-            Method::Get => atoms::get(),
-            Method::Head => atoms::head(),
-            Method::Post => atoms::post(),
-            Method::Put => atoms::put(),
-            Method::Delete => atoms::delete(),
-            Method::Connect => atoms::connect(),
-            Method::Options => atoms::options(),
-            Method::Trace => atoms::trace(),
-            Method::Patch => atoms::patch(),
-            _ => atoms::non_standard(),
-        }
-    }
-}
-
 #[rustler::nif()]
-fn start(env: Env, config: Config) -> Atom {
+pub fn start(env: Env, config: Config) -> Atom {
     let server = Server::http(config.host).unwrap();
     let addr = server.server_addr();
     let pid = Arc::new(env.pid());
@@ -88,7 +67,7 @@ fn start(env: Env, config: Config) -> Atom {
 }
 
 #[rustler::nif]
-fn handle_request(response: Resp) -> Atom {
+pub fn handle_request(response: Resp) -> Atom {
     let mut request_ref = response.req_ref.0.lock().unwrap();
     let payload = Response::from_string(response.body);
 
@@ -97,4 +76,25 @@ fn handle_request(response: Resp) -> Atom {
     }
 
     atoms::ok()
+}
+
+trait AsAtom {
+    fn as_atom(&self) -> Atom;
+}
+
+impl AsAtom for Method {
+    fn as_atom(&self) -> Atom {
+        match self {
+            Method::Get => atoms::get(),
+            Method::Head => atoms::head(),
+            Method::Post => atoms::post(),
+            Method::Put => atoms::put(),
+            Method::Delete => atoms::delete(),
+            Method::Connect => atoms::connect(),
+            Method::Options => atoms::options(),
+            Method::Trace => atoms::trace(),
+            Method::Patch => atoms::patch(),
+            _ => atoms::non_standard(),
+        }
+    }
 }
