@@ -25,9 +25,14 @@ defmodule Tinybeam.Server do
   end
 
   def handle_request(request) do
+    body = router().match(:get, request.path)
+
     :ok =
       request.req_ref
-      |> Response.new("I think it works")
+      |> Response.new(body)
       |> Tinybeam.Native.handle_request()
   end
+
+  # TODO: improve configuration 
+  defp router(), do: Application.get_env(:tinybeam, :router)
 end
