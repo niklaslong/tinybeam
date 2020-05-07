@@ -1,7 +1,7 @@
 defmodule Tinybeam.Server do
   use GenServer
 
-  alias Tinybeam.Server.Config
+  alias Tinybeam.Server.{Config, Request, Response}
 
   require IEx
   require Logger
@@ -16,15 +16,18 @@ defmodule Tinybeam.Server do
     {:ok, "started"}
   end
 
-  def handle_info({:request, request}, state) do
+  def handle_info({:request, %Request{} = request}, state) do
     Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
-      Tinybeam.Server.handle_req(request)
+      Tinybeam.Server.handle_request(request)
     end)
 
     {:noreply, state}
   end
 
-  def handle_req(request) do
-    :ok = Tinybeam.Native.handle_request(request, "I think it works")
+  def handle_request(request) do
+    :ok =
+      request.req_ref
+      |> Response.new("I think it works")
+      |> Tinybeam.Native.handle_request()
   end
 end

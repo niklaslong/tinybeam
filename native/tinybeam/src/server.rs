@@ -88,12 +88,12 @@ fn start(env: Env, config: Config) -> Atom {
 }
 
 #[rustler::nif]
-fn handle_request(request: Req, response: String) -> Atom {
-    let mut request_ref = request.req_ref.0.lock().unwrap();
-    let response = Response::from_string(response);
+fn handle_request(response: Resp) -> Atom {
+    let mut request_ref = response.req_ref.0.lock().unwrap();
+    let payload = Response::from_string(response.body);
 
     if let Some(request) = request_ref.take() {
-        let _res = request.respond(response);
+        let _res = request.respond(payload);
     }
 
     atoms::ok()
