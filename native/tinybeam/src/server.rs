@@ -40,7 +40,7 @@ pub fn start(env: Env, config: Config) -> Atom {
 
     std::thread::spawn(move || {
         let server = Arc::new(server);
-        let mut guards = Vec::with_capacity(4);
+        let mut guards = Vec::with_capacity(10);
 
         for _ in 0..10 {
             let pid = Arc::clone(&pid);
