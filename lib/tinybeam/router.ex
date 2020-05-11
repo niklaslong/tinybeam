@@ -16,4 +16,6 @@ defmodule Tinybeam.Router do
       end
     end
   end
+
+  def match(:get, "/"), do: "hi, welcome to tinybeam!"
 end
