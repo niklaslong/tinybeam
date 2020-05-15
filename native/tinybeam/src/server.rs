@@ -18,6 +18,7 @@ pub struct Req {
     req_ref: ResourceArc<ReqRef>,
     method: Atom,
     path: String,
+    body: String,
 }
 
 #[derive(NifStruct)]
@@ -48,14 +49,18 @@ pub fn start(env: Env, config: Config) -> Atom {
 
             let guard = thread::spawn(move || loop {
                 let mut msg_env = OwnedEnv::new();
-                let request = server.recv().unwrap();
+                let mut request = server.recv().unwrap();
                 let method = request.method().as_atom();
                 let path = request.url().to_string();
+
+                let mut body = String::new();
+                request.as_reader().read_to_string(&mut body).unwrap();
 
                 let req = Req {
                     req_ref: ResourceArc::new(ReqRef(Mutex::new(Some(request)))),
                     method: method,
                     path: path,
+                    body: body,
                 };
 
                 msg_env.send_and_clear(&pid, |env| (atoms::request(), req).encode(env));
