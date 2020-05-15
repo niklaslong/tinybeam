@@ -25,7 +25,7 @@ defmodule Tinybeam.Server do
   end
 
   def handle_request(request) do
-    body = router().match(request.method, request.path)
+    body = router().match(request.method, request.path, request)
 
     :ok =
       request.req_ref
