@@ -1,7 +1,7 @@
 use crate::atoms;
-use rustler::{Atom, Encoder, Env, NifStruct, OwnedEnv, ResourceArc, Term, NifMap};
+use rustler::{Atom, Encoder, Env, NifStruct, NifTuple, OwnedEnv, ResourceArc, Term};
 use std::sync::{Arc, Mutex};
-use std::{thread, iter::Iterator};
+use std::{iter::Iterator, thread};
 use tiny_http::{Method, Request, Response, Server};
 
 #[derive(NifStruct)]
@@ -16,7 +16,7 @@ pub struct Req {
     req_ref: ResourceArc<ReqRef>,
     method: Atom,
     path: String,
-    headers: Vec<String>,
+    headers: Vec<Header>,
     content: String,
 }
 
@@ -28,6 +28,12 @@ pub struct Resp {
 }
 
 struct ReqRef(Mutex<Option<Request>>);
+
+#[derive(NifTuple)]
+struct Header {
+    field: String,
+    value: String,
+}
 
 pub fn load(env: Env, _: Term) -> bool {
     rustler::resource!(ReqRef, env);
@@ -54,10 +60,15 @@ pub fn start(env: Env, config: Config) -> Atom {
                 let method = request.method().as_atom();
                 let path = request.url().to_string();
 
-                let mut headers: Vec<String> = Vec::new();
+                let mut headers = Vec::new();
 
                 for h in request.headers().iter() {
-                    headers.push(h.to_string());
+                    let header = Header {
+                        field: h.field.to_string(),
+                        value: h.value.to_string(),
+                    };
+
+                    headers.push(header);
                 }
 
                 let mut content = String::new();
