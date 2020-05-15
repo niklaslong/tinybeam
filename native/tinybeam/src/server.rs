@@ -1,7 +1,7 @@
 use crate::atoms;
-use rustler::{Atom, Encoder, Env, NifStruct, OwnedEnv, ResourceArc, Term};
+use rustler::{Atom, Encoder, Env, NifStruct, OwnedEnv, ResourceArc, Term, NifMap};
 use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{thread, iter::Iterator};
 use tiny_http::{Method, Request, Response, Server};
 
 #[derive(NifStruct)]
@@ -10,14 +10,13 @@ pub struct Config {
     host: String,
 }
 
-struct ReqRef(Mutex<Option<Request>>);
-
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Request"]
 pub struct Req {
     req_ref: ResourceArc<ReqRef>,
     method: Atom,
     path: String,
+    headers: Vec<String>,
     content: String,
 }
 
@@ -27,6 +26,8 @@ pub struct Resp {
     req_ref: ResourceArc<ReqRef>,
     body: String,
 }
+
+struct ReqRef(Mutex<Option<Request>>);
 
 pub fn load(env: Env, _: Term) -> bool {
     rustler::resource!(ReqRef, env);
@@ -53,6 +54,12 @@ pub fn start(env: Env, config: Config) -> Atom {
                 let method = request.method().as_atom();
                 let path = request.url().to_string();
 
+                let mut headers: Vec<String> = Vec::new();
+
+                for h in request.headers().iter() {
+                    headers.push(h.to_string());
+                }
+
                 let mut content = String::new();
                 request.as_reader().read_to_string(&mut content).unwrap();
 
@@ -60,6 +67,7 @@ pub fn start(env: Env, config: Config) -> Atom {
                     req_ref: ResourceArc::new(ReqRef(Mutex::new(Some(request)))),
                     method: method,
                     path: path,
+                    headers: headers,
                     content: content,
                 };
 
