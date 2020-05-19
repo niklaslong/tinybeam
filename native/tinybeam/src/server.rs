@@ -32,7 +32,7 @@ pub struct Resp {
 
 struct ReqRef(Mutex<Option<Request>>);
 
-#[derive(NifTuple, Debug)]
+#[derive(NifTuple)]
 struct Head {
     field: String,
     value: String,
