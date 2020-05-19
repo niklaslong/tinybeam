@@ -29,7 +29,7 @@ defmodule Tinybeam.Server do
 
     :ok =
       request.req_ref
-      |> Response.new(body)
+      |> Response.new(body, [])
       |> Tinybeam.Native.handle_request()
   end
 

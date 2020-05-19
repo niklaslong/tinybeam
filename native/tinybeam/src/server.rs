@@ -1,8 +1,9 @@
 use crate::atoms;
 use rustler::{Atom, Encoder, Env, NifStruct, NifTuple, OwnedEnv, ResourceArc, Term};
+use std::io::Cursor;
 use std::sync::{Arc, Mutex};
 use std::{iter::Iterator, thread};
-use tiny_http::{Method, Request, Response, Server};
+use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
 #[derive(NifStruct)]
 #[module = "Tinybeam.Server.Config"]
@@ -16,7 +17,7 @@ pub struct Req {
     req_ref: ResourceArc<ReqRef>,
     method: Atom,
     path: String,
-    headers: Vec<Header>,
+    headers: Vec<Head>,
     content: String,
 }
 
@@ -24,13 +25,14 @@ pub struct Req {
 #[module = "Tinybeam.Server.Response"]
 pub struct Resp {
     req_ref: ResourceArc<ReqRef>,
+    headers: Vec<Head>,
     body: String,
 }
 
 struct ReqRef(Mutex<Option<Request>>);
 
-#[derive(NifTuple)]
-struct Header {
+#[derive(NifTuple, Debug)]
+struct Head {
     field: String,
     value: String,
 }
@@ -63,7 +65,7 @@ pub fn start(env: Env, config: Config) -> Atom {
                 let mut headers = Vec::new();
 
                 for h in request.headers().iter() {
-                    let header = Header {
+                    let header = Head {
                         field: h.field.to_string(),
                         value: h.value.to_string(),
                     };
@@ -94,12 +96,31 @@ pub fn start(env: Env, config: Config) -> Atom {
 }
 
 #[rustler::nif]
-pub fn handle_request(response: Resp) -> Atom {
-    let mut request_ref = response.req_ref.0.lock().unwrap();
-    let payload = Response::from_string(response.body);
+pub fn handle_request(resp: Resp) -> Atom {
+    let mut request_ref = resp.req_ref.0.lock().unwrap();
+    let mut headers = Vec::new();
+
+    for h in resp.headers.iter() {
+        let field = h.field.as_bytes();
+        let value = h.value.as_bytes();
+
+        let header = Header::from_bytes(field, value).unwrap();
+        headers.push(header);
+    }
+
+    let data: String = resp.body.into();
+    let data_len = data.len();
+
+    let response = Response::new(
+        StatusCode(200),
+        headers,
+        Cursor::new(data.into_bytes()),
+        Some(data_len),
+        None,
+    );
 
     if let Some(request) = request_ref.take() {
-        let _res = request.respond(payload);
+        let _res = request.respond(response);
     }
 
     atoms::ok()
