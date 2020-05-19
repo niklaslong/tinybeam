@@ -25,6 +25,7 @@ pub struct Req {
 #[module = "Tinybeam.Server.Response"]
 pub struct Resp {
     req_ref: ResourceArc<ReqRef>,
+    status_code: u16,
     headers: Vec<Head>,
     body: String,
 }
@@ -112,7 +113,7 @@ pub fn handle_request(resp: Resp) -> Atom {
     let data_len = data.len();
 
     let response = Response::new(
-        StatusCode(200),
+        StatusCode(resp.status_code),
         headers,
         Cursor::new(data.into_bytes()),
         Some(data_len),
