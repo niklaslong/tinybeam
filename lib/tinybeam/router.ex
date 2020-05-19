@@ -1,4 +1,6 @@
 defmodule Tinybeam.Router do
+  alias Tinybeam.Server.Response
+
   defmacro __using__(_options) do
     quote do
       import Tinybeam.Router
@@ -25,5 +27,6 @@ defmodule Tinybeam.Router do
     end
   end
 
-  def match(:get, "/", request), do: "hi, welcome to tinybeam!"
+  def match(:get, "/", request),
+    do: Response.new(request.req_ref, "hi, welcome to tinybeam!", [{"Content-Type", "text/plain"}])
 end
