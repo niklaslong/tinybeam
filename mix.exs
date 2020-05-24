@@ -25,8 +25,7 @@ defmodule Tinybeam.MixProject do
   defp deps do
     [
       {:rustler, github: "rusterlium/rustler", sparse: "rustler_mix", branch: "master"},
-      {:mint, "~> 1.0", only: [:test, :dev]},
-      {:stream_data, "~> 0.5.0", only: [:test, :dev]}
+      {:mint, "~> 1.0", only: [:test, :dev]}
     ]
   end
 
