@@ -1,8 +1,9 @@
 use crate::atoms;
 use rustler::{Atom, Encoder, Env, NifStruct, NifTuple, OwnedEnv, ResourceArc, Term};
 use std::io::Cursor;
+use std::iter::Iterator;
 use std::sync::{Arc, Mutex};
-use std::{iter::Iterator, thread};
+use std::thread;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
 #[derive(NifStruct)]
