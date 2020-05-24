@@ -51,9 +51,10 @@ pub fn start(env: Env, config: Config) -> Atom {
 
     std::thread::spawn(move || {
         let server = Arc::new(server);
-        let mut guards = Vec::with_capacity(10);
+        let pool_size = 10;
+        let mut guards = Vec::with_capacity(pool_size);
 
-        for _ in 0..10 {
+        for _ in 0..pool_size {
             let pid = Arc::clone(&pid);
             let server = server.clone();
 
