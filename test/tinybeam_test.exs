@@ -2,14 +2,22 @@ defmodule TinybeamTest do
   use ExUnit.Case
   alias Mint
 
-  require IEx
   doctest Tinybeam
 
-  test "gets a response from the server" do
-    response = send_request("GET", "/")
+  describe "matches HTTP method:" do
+    test "GET" do
+      response = send_request("GET", "/get", [{"Accept", "text/plain"}])
 
-    assert response.status == 200
-    assert response.data == "yay"
+      assert response.status == 200
+      assert response.data == "yay"
+    end
+
+    test "POST" do
+      response = send_request("POST", "/post", [{"Content-Type", "text/plain"}], "data")
+
+      assert response.status == 201
+      assert response.data == "data"
+    end
   end
 
   defp send_request(method, path, headers \\ [], body \\ "") do
