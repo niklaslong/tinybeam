@@ -1,6 +1,7 @@
 # Used by "mix format"
 locals_without_parens = [
-  get: 2
+  get: 2,
+  post: 2
 ]
 
 [

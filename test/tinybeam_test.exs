@@ -20,7 +20,7 @@ defmodule TinybeamTest do
     end
   end
 
-  defp send_request(method, path, headers \\ [], body \\ "") do
+  defp send_request(method, path, headers, body \\ "") do
     host = Application.get_env(:tinybeam, :host)
     port = Application.get_env(:tinybeam, :port)
 
