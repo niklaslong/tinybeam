@@ -1,10 +1,6 @@
 defmodule Tinybeam.Server do
   use GenServer
-
   alias Tinybeam.Server.{Config, Request, Response}
-
-  require IEx
-  require Logger
 
   def start_link(_opts) do
     config = Config.new()
