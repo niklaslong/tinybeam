@@ -1,17 +1,13 @@
 defmodule Tinybeam.Server do
   use GenServer
-
   alias Tinybeam.Server.{Config, Request, Response}
-
-  require IEx
-  require Logger
 
   def start_link(_opts) do
     config = Config.new()
     GenServer.start_link(__MODULE__, config, name: __MODULE__)
   end
 
-  def init(config) do
+  def init(%Config{} = config) do
     :ok = Tinybeam.Native.start(config)
     {:ok, "started"}
   end
@@ -24,9 +20,8 @@ defmodule Tinybeam.Server do
     {:noreply, state}
   end
 
-  def handle_request(request) do
-    response = router().match(request.method, request.path, request)
-
+  def handle_request(%Request{} = request) do
+    response = %Response{} = router().match(request.method, request.path, request)
     :ok = Tinybeam.Native.handle_request(response)
   end
 
