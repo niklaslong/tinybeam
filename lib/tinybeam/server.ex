@@ -1,5 +1,7 @@
 defmodule Tinybeam.Server do
   use GenServer
+
+  alias Tinybeam.{Native, TaskSupervisor}
   alias Tinybeam.Server.{Config, Request, Response}
 
   def start_link(_opts) do
@@ -8,13 +10,13 @@ defmodule Tinybeam.Server do
   end
 
   def init(%Config{} = config) do
-    :ok = Tinybeam.Native.start(config)
+    :ok = Native.start(config)
     {:ok, "started"}
   end
 
   def handle_info({:request, %Request{} = request}, state) do
-    Task.Supervisor.start_child(Tinybeam.TaskSupervisor, fn ->
-      Tinybeam.Server.handle_request(request)
+    Task.Supervisor.start_child(TaskSupervisor, fn ->
+      __MODULE__.handle_request(request)
     end)
 
     {:noreply, state}
@@ -22,7 +24,7 @@ defmodule Tinybeam.Server do
 
   def handle_request(%Request{} = request) do
     response = %Response{} = router().match(request.method, request.path, request)
-    :ok = Tinybeam.Native.handle_request(response)
+    :ok = Native.handle_request(response)
   end
 
   # TODO: improve configuration 
