@@ -10,6 +10,7 @@ use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 #[module = "Tinybeam.Server.Config"]
 pub struct Config {
     host: String,
+    pool_size: usize,
 }
 
 #[derive(NifStruct)]
@@ -52,10 +53,9 @@ pub fn start(env: Env, config: Config) -> Atom {
     let pid = Arc::new(env.pid());
     let server = Arc::new(server);
 
-    let pool_size = 10;
-    let mut guards = Vec::with_capacity(pool_size);
+    let mut guards = Vec::with_capacity(config.pool_size);
 
-    for _ in 0..pool_size {
+    for _ in 0..config.pool_size {
         let pid = Arc::clone(&pid);
         let server = Arc::clone(&server);
 
