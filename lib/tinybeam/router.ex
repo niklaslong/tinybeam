@@ -30,7 +30,7 @@ defmodule Tinybeam.Router do
 
   def match(:get, "/", request),
     do:
-      Response.new(request.req_ref, 200, "hi, welcome to tinybeam!", [
+      Response.new(request.req_ref, 200, "Hi, welcome to tinybeam!", [
         {"Content-Type", "text/plain"}
       ])
 end
