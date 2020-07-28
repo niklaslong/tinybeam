@@ -10,6 +10,7 @@ use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 #[module = "Tinybeam.Server.Config"]
 pub struct Config {
     host: String,
+    pool_size: usize,
 }
 
 #[derive(NifStruct)]
@@ -48,51 +49,49 @@ pub fn load(env: Env, _: Term) -> bool {
 pub fn start(env: Env, config: Config) -> Atom {
     let server = Server::http(config.host).unwrap();
     let addr = server.server_addr();
+
     let pid = Arc::new(env.pid());
+    let server = Arc::new(server);
 
-    std::thread::spawn(move || {
-        let server = Arc::new(server);
-        let pool_size = 10;
-        let mut guards = Vec::with_capacity(pool_size);
+    let mut guards = Vec::with_capacity(config.pool_size);
 
-        for _ in 0..pool_size {
-            let pid = Arc::clone(&pid);
-            let server = server.clone();
+    for _ in 0..config.pool_size {
+        let pid = Arc::clone(&pid);
+        let server = Arc::clone(&server);
 
-            let guard = thread::spawn(move || loop {
-                let mut msg_env = OwnedEnv::new();
-                let mut request = server.recv().unwrap();
-                let method = request.method().as_atom();
-                let path = request.url().to_string();
+        let guard = thread::spawn(move || loop {
+            let mut msg_env = OwnedEnv::new();
+            let mut request = server.recv().unwrap();
+            let method = request.method().as_atom();
+            let path = request.url().to_string();
 
-                let mut headers = Vec::new();
+            let mut headers = Vec::new();
 
-                for h in request.headers().iter() {
-                    let header = Head {
-                        field: h.field.to_string(),
-                        value: h.value.to_string(),
-                    };
-
-                    headers.push(header);
-                }
-
-                let mut content = String::new();
-                request.as_reader().read_to_string(&mut content).unwrap();
-
-                let req = Req {
-                    req_ref: ResourceArc::new(ReqRef(Mutex::new(Some(request)))),
-                    method: method,
-                    path: path,
-                    headers: headers,
-                    content: content,
+            for h in request.headers().iter() {
+                let header = Head {
+                    field: h.field.to_string(),
+                    value: h.value.to_string(),
                 };
 
-                msg_env.send_and_clear(&pid, |env| (atoms::request(), req).encode(env));
-            });
+                headers.push(header);
+            }
 
-            guards.push(guard);
-        }
-    });
+            let mut content = String::new();
+            request.as_reader().read_to_string(&mut content).unwrap();
+
+            let req = Req {
+                req_ref: ResourceArc::new(ReqRef(Mutex::new(Some(request)))),
+                method: method,
+                path: path,
+                headers: headers,
+                content: content,
+            };
+
+            msg_env.send_and_clear(&pid, |env| (atoms::request(), req).encode(env));
+        });
+
+        guards.push(guard);
+    }
 
     println!("Server started, listening on port {:?}", addr);
     atoms::ok()
